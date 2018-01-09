@@ -1,12 +1,12 @@
 package com.calcur.jess.prueba_mapa;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -14,7 +14,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -27,6 +29,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int LOCATION_REQUEST_CODE = 101;
 
+    public static final LatLng coordenadasPlazaDelSol = new LatLng(20.650474, -103.401933);
+
+    public static final LatLng coordenadasExpoGuadalajara = new LatLng(20.653989, -103.392453);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +43,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+
 
     }
 
@@ -65,6 +73,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         checkLocationandAddToMap();
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
+        setMarker(coordenadasPlazaDelSol, "Plaza del Sol", "Centro Comercial");
+
+        setMarker(coordenadasExpoGuadalajara, "Expo Guadalajara", "Centro de Convenciones");
+
+        mMap.setMyLocationEnabled(true);
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15.0f));
+
     }
 
     @Override
@@ -97,24 +128,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void checkLocationandAddToMap() {
-//Checking if the user has granted the permission
+    //Checking if the user has granted the permission
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//Requesting the Location permission
+    //Requesting the Location permission
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             return;
         }
 
-//Fetching the last known location using the Fus
+    //Fetching the last known location using the Fus
         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
-//MarkerOptions are used to create a new Marker.You can specify location, title etc with MarkerOptions
+    //MarkerOptions are used to create a new Marker.You can specify location, title etc with MarkerOptions
         MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("You are Here");
 
-//Adding the created the marker on the map
-        mMap.addMarker(markerOptions);
+    //Adding the created the marker on the map
+        //mMap.addMarker(markerOptions);
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15.0f));
 
+
+    }
+
+    private void setMarker(LatLng pocision, String titulo, String info) {
+
+        Marker myMarker = mMap.addMarker(new MarkerOptions()
+        .position(pocision)
+        .title(titulo)
+        .snippet(info)
+        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
     }
 
 
